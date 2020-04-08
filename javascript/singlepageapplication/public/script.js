@@ -1,5 +1,6 @@
 window.onload = function() {
 	createForm();
+	getShoppingList();
 }
 
 createForm = () => {
@@ -65,10 +66,149 @@ createForm = () => {
 	shoppingForm.appendChild(br.cloneNode());
 
 	shoppingForm.appendChild(submit);
+	shoppingForm.addEventListener("submit",function(e) {
+		e.preventDefault();
+		addToList();
+	})
 	
 	centeringDiv.appendChild(shoppingForm);
 	anchor.appendChild(centeringDiv);
 	let tableanchor = document.createElement("div");
 	tableanchor.setAttribute("id","tableanchor");
 	anchor.appendChild(tableanchor);
+}
+
+addToList = () => {
+	let type = document.getElementById("typeinput").value;
+	let count = document.getElementById("countinput").value;
+	let price = document.getElementById("priceinput").value;
+	
+	let item = {
+		type:type,
+		count:count,
+		price:price
+	}
+	
+	let request = {
+		method:"POST",
+		mode:"cors",
+		headers:{"Content-type":"application/json"},
+		body:JSON.stringify(item)		
+	}
+	fetch("/api/shopping",request).then(response => {
+		if(response.ok) {
+			getShoppingList();
+			console.log("Add to list success!");
+		} else {
+			console.log("Add to list failed:"+response.status);
+		}
+	}).catch(error => {
+		console.log(error);
+	});
+}
+
+getShoppingList = () => {
+	let request = {
+		method:"GET",
+		mode:"cors",
+		headers:{"Content-type":"application/json"}
+	}
+	fetch("/api/shopping",request).then(response => {
+		if(response.ok) {
+			response.json().then(data => {
+				populateTable(data);
+			}).catch(error => {
+				console.log(error);
+			})
+		} else {
+			console.log("getShoppingList() failed. Reason:"+response.status);
+		}
+	}
+	).catch(error => {
+		console.log(error);
+	});
+}
+
+removeFromList = (id) => {
+	let request = {
+		method:"DELETE",
+		mode:"cors",
+		headers:{"Content-type":"application/json"}
+	}
+	fetch("/api/shopping/"+id,request).then(response => {
+		if(response.ok) {
+			getShoppingList();
+		} else {
+			console.log("Remove from list failed. Reason:"+response.status)
+		}
+	}).catch(error => {
+		console.log(error);
+	})
+}
+
+populateTable = (data) => {
+	let tableanchor = document.getElementById("tableanchor");
+	let table = document.getElementById("table");
+	if(table) {
+		tableanchor.removeChild(table);
+	}
+	let newTable = document.createElement("table");
+	newTable.setAttribute("id","table");
+	newTable.setAttribute("class","table");
+	
+	let header = document.createElement("thead");
+	let headerRow = document.createElement("tr");
+	
+	let typeheader = document.createElement("th");
+	let typeheadertext = document.createTextNode("Type");
+	typeheader.appendChild(typeheadertext);
+	
+	let countheader = document.createElement("th");
+	let countheadertext = document.createTextNode("Count");
+	countheader.appendChild(countheadertext);
+	
+	let priceheader = document.createElement("th");
+	let priceheadertext = document.createTextNode("Price");
+	priceheader.appendChild(priceheadertext);
+	
+	let removeHeader = document.createElement("th");
+	let removeHeaderText = document.createTextNode("Remove");
+	removeHeader.appendChild(removeHeaderText);
+	
+	
+	headerRow.appendChild(typeheader);
+	headerRow.appendChild(countheader);
+	headerRow.appendChild(priceheader);
+	headerRow.appendChild(removeHeader);
+	
+	header.appendChild(headerRow);
+	newTable.appendChild(header);
+	
+	let body = document.createElement("tbody");
+	for(let i=0;i<data.length;i++) {
+		let tableRow = document.createElement("tr");
+		for(x in data[i]) {
+			if(x === "id") {
+				continue;
+			}
+			let column = document.createElement("td");
+			let info = document.createTextNode(data[i][x]);
+			column.appendChild(info);
+			tableRow.appendChild(column);
+		}
+		let removeColumn = document.createElement("td");
+		let removeButton = document.createElement("button");
+		let removeText = document.createTextNode("Remove");
+		removeButton.appendChild(removeText);
+		removeButton.setAttribute("name",data[i].id);
+		removeButton.setAttribute("class","btn btn-danger");
+		removeButton.addEventListener("click",function(e) {
+			removeFromList(e.target.name);
+		})
+		removeColumn.appendChild(removeButton)
+		tableRow.appendChild(removeColumn);
+		body.appendChild(tableRow);
+	}
+	newTable.appendChild(body);
+	tableanchor.appendChild(newTable);
 }
