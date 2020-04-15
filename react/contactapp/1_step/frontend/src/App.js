@@ -1,6 +1,8 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import ContactForm from './components/ContactForm';
+import ContactList from './components/ContactList';
 
 class App extends React.Component {
   
@@ -9,6 +11,10 @@ class App extends React.Component {
 	  this.state = {
 		  list:[]
 	  }
+  }
+  
+  componentDidMount() {
+	  this.getContactList();
   }
   
   getContactList = () => {
@@ -50,10 +56,28 @@ class App extends React.Component {
 	  })
   }
   
+  removeContact = (id) => {
+	  let request = {
+		  method:"DELETE",
+		  mode:"cors",
+		  headers:{"Content-Type":"application/json"}
+	  }
+	  fetch("/api/contact/"+id,request).then(response => {
+		  if(response.ok) {
+			  this.getContactList();
+		  } else {
+			  console.log("Server responded with status:",response.status);
+		  }
+	  }).catch(error => {
+		  console.log(error);
+	  })
+  }
+  
   render() {
 	  return (
 		<div className="App">
-
+			<ContactForm addContact={this.addContact}/>
+			<ContactList list={this.state.list} removeContact={this.removeContact}/>
 		</div>
 	  );
   }
