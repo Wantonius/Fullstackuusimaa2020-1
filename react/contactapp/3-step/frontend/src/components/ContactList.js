@@ -10,15 +10,15 @@ export default class ContactList extends React.Component {
 	render() {
 
 		let contactitems = this.props.list.map(contact => 
-			<Table.Row key={contact.id}>
+			<Table.Row key={contact._id}>
 				<Table.Cell>{contact.title}</Table.Cell>
 				<Table.Cell>{contact.firstname}</Table.Cell>
 				<Table.Cell>{contact.lastname}</Table.Cell>
 				<Table.Cell>{contact.phone[0]}</Table.Cell>
 				<Table.Cell>{contact.mobile[0]}</Table.Cell>
 				<Table.Cell>{contact.email[0]}</Table.Cell>
-				<Table.Cell><Button name={contact.id} onClick={this.remove}>Remove</Button></Table.Cell>
-				<Table.Cell><Button name={contact.id} onClick={this.details}>Details</Button></Table.Cell>
+				<Table.Cell><Button name={contact._id} onClick={this.remove}>Remove</Button></Table.Cell>
+				<Table.Cell><Button name={contact._id} onClick={this.details}>Details</Button></Table.Cell>
 			</Table.Row>
 		)
 		return(

@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 
 //USER MANAGEMENT
 
-const time_to_live_diff = 1000*10
+const time_to_live_diff = 1000*60*60
 
 //database
 
@@ -160,14 +160,23 @@ app.post("/logout",function(req,res) {
 	if(!token) {
 		return res.status(409).json({message:"conflict"})
 	}
-	for(let i=0;i<loggedSessions.length;i++) {
-		if(token === loggedSessions[i].token) {
-			loggedSessions.splice(i,1);
-			return res.status(200).json({message:"success!"})
+	sessionModel.findOne({"token":token}, function(err,session) {
+		if(err) {
+			console.log("Failed to find session while logging out. Reason:"+err);
+			return res.status(409).json({message:"conflict"})
 		}
-	}
-	return res.status(404).json({message:"not found"})
+		if(!session) {
+			return res.status(404).json({message:"not found"})
+		}
+		sessionModel.deleteOne({"_id":session._id}, function(err) {
+			if(err) {
+				console.log("Failed to remove session while logging out. Reason:"+err);
+			}
+			return res.status(200).json({message:"success"})
+		})
+	})
 })
+
 app.use("/api",isUserLogged,contactrouter);
 
 app.listen(port);
