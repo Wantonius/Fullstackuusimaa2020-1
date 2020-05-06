@@ -1,25 +1,80 @@
 import React from 'react';
 import {Table,Button} from 'semantic-ui-react';
+import {connect} from 'react-redux'
+import {removeContact,changeMode} from '../actions/contactActions';
+import Row from './Row'
+import RemoveRow from './RemoveRow';
+import EditRow from './EditRow';
+import {withRouter} from 'react-router-dom';
 
-export default class ContactList extends React.Component {
+class ContactList extends React.Component {
 	
-	remove = (event) => {
-		this.props.removeContact(event.target.name);
+	constructor(props) {
+		super(props);
+		this.state = {
+			removeIndex:-1,
+			editIndex:-1
+		}
+	}
+	
+	handleRemove = (id) => {
+		for(let i=0;i<this.props.list.length;i++) {
+			if(this.props.list[i]._id === id) {
+				this.setState({
+					removeIndex:i,
+					editIndex:-1
+				})
+				return
+			}
+		}
+	}
+	
+	handleEdit = (id) => {
+		for(let i=0;i<this.props.list.length;i++) {
+			if(this.props.list[i]._id === id) {
+				this.setState({
+					removeIndex:-1,
+					editIndex:i
+				})
+				return
+			}
+		}		
+	}
+	
+	remove = (id) => {
+		this.props.dispatch(removeContact(this.props.token,id));
+	}
+	
+	edit = (contact) => {
+		this.props.dispatch(changeMode("Edit",contact));
+		this.props.history.push("/form");
+	}
+	
+	cancel = () => {
+		this.setState({
+			removeIndex:-1,
+			editIndex:-1
+		})
 	}
 	
 	render() {
 
-		let contactitems = this.props.list.map(contact => 
-			<Table.Row key={contact._id}>
-				<Table.Cell>{contact.title}</Table.Cell>
-				<Table.Cell>{contact.firstname}</Table.Cell>
-				<Table.Cell>{contact.lastname}</Table.Cell>
-				<Table.Cell>{contact.phone[0]}</Table.Cell>
-				<Table.Cell>{contact.mobile[0]}</Table.Cell>
-				<Table.Cell>{contact.email[0]}</Table.Cell>
-				<Table.Cell><Button name={contact._id} onClick={this.remove}>Remove</Button></Table.Cell>
-				<Table.Cell><Button name={contact._id} onClick={this.details}>Details</Button></Table.Cell>
-			</Table.Row>
+		let contactitems = this.props.list.map((contact,index) => {
+			if(this.state.editIndex === index) {
+				return <EditRow key={contact._id} contact={contact}
+						edit={this.edit}
+						cancel={this.cancel}/>
+			}
+			if(this.state.removeIndex === index) {
+				return <RemoveRow key={contact._id} contact={contact}
+						remove={this.remove}
+						cancel={this.cancel} />
+			}
+			return <Row key={contact._id} contact={contact} 
+						handleRemove={this.handleRemove} 
+						handleEdit={this.handleEdit} 
+						details={this.details}/>
+			}
 		)
 		return(
 			<Table celled>
@@ -31,6 +86,7 @@ export default class ContactList extends React.Component {
 					<Table.HeaderCell>Main Mobile</Table.HeaderCell>
 					<Table.HeaderCell>Main Email</Table.HeaderCell>
 					<Table.HeaderCell>Remove</Table.HeaderCell>
+					<Table.HeaderCell>Edit</Table.HeaderCell>
 					<Table.HeaderCell>Details</Table.HeaderCell>
 				</Table.Header>
 				<Table.Body>
@@ -41,3 +97,13 @@ export default class ContactList extends React.Component {
 		
 	}
 }
+
+
+const mapStateToProps = (state) => {
+	return {
+		token:state.login.token,
+		list:state.contact.list
+	}
+}
+
+export default withRouter(connect(mapStateToProps)(ContactList))

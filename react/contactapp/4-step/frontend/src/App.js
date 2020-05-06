@@ -11,87 +11,8 @@ import {connect} from 'react-redux';
 
 class App extends React.Component {
   
-  constructor(props) {
-	  super(props);
-	  this.state = {
-		  list:[]
-	  }
-  }
-  
-  //Helpers
-  
-  loadFromStorage = () => {
-	  if(sessionStorage.getItem("state")) {
-		let state = JSON.parse(sessionStorage.getItem("state"));
-		this.setState(state)
-	  }
-  }
-  
-  saveToStorage = () => {
-	  sessionStorage.setItem("state",JSON.stringify(this.state));
-  }
-  
-  componentDidMount() {
-	  this.loadFromStorage();
-  }
-  
-  //Login API
-  
-  
 
-  
-  onLogout = () => {
-	  let request = {
-		  method:"POST",
-		  mode:"cors",
-		  headers: {"Content-Type":"application/json",
-					"token":this.state.token}
-	  }
-	  fetch("/logout",request).then(response => {
-		  this.setState({
-			  token:"",
-			  isLogged:false,
-			  list:[]
-		  },() => {
-			  this.saveToStorage();
-		  })
-	  }).catch(error => {
-		  console.log(error);
-		  this.setState({
-			  token:"",
-			  isLogged:false,
-			  list:[]
-		  },() => {
-			  this.saveToStorage();
-		  })		  
-	  })
-  }
-  
-  //Contact API
-  
-  getContactList = () => {
-	  let request = {
-		  method:"GET",
-		  mode:"cors",
-		  headers:{"Content-Type":"application/json",
-					"token":this.props.token}
-	  }
-	  fetch("/api/contact",request).then(response => {
-		if(response.ok) {
-			response.json().then(data => {
-				this.setState({
-					list:data
-				}, () => {
-					this.saveToStorage();
-				})
-			}).catch(error => {
-				console.log("Server responded with status:",response.status);
-			})
-		}
-	  }).catch(error => {
-		  console.log(error);
-	  })
-  }
+
   
   addContact = (contact) => {
 	  let request = {
@@ -143,12 +64,12 @@ class App extends React.Component {
 				)}/>
 				<Route path="/form" render={() => (
 					this.props.isLogged ?
-					(<ContactForm addContact={this.addContact}/>) :
+					(<ContactForm />) :
 					(<Redirect to="/"/>)
 				)}/>
 				<Route path="/list" render={() => (
 					this.props.isLogged ?
-					(<ContactList list={this.state.list} removeContact={this.removeContact}/>):
+					(<ContactList removeContact={this.removeContact}/>):
 					(<Redirect to="/"/>)
 				)}/>			
 				<Route render={() => (
@@ -164,8 +85,8 @@ class App extends React.Component {
 
 const mapStateToProps = (state) => {
 	return {
-		isLogged:state.isLogged,
-		token:state.token
+		isLogged:state.login.isLogged,
+		token:state.login.token
 	}
 }
 

@@ -1,5 +1,6 @@
 import {
 	LOADING,
+	END_LOADING,
 	REGISTER_SUCCESS,
 	REGISTER_FAILED,
 	LOGIN_SUCCESS,
@@ -44,6 +45,12 @@ const loginReducer = (state = initialState, action) => {
 			return {
 				...state,
 				loading:true,
+				error:""
+			}
+		case END_LOADING:
+			return {
+				...state,
+				loading:false,
 				error:""
 			}
 		case REGISTER_SUCCESS:

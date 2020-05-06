@@ -102,6 +102,7 @@ router.delete("/contact/:id",function(req,res) {
 
 router.put("/contact/:id",function(req,res) {
 	let id = req.params.id
+	console.log(req.body);
 	if(!req.body) {
 		return res.status(422).json({message:"provide required data"})
 	}
@@ -125,16 +126,16 @@ router.put("/contact/:id",function(req,res) {
 		city:req.body.city,
 		country:req.body.country
 	}
-	contactModel.findById(id,function(err,contact) {
+	contactModel.findById(id,function(err,con) {
 		if(err) {
 			console.log("Error finding contact to edit. Reason"+err);
 			return res.status(404).json({message:"not found"})
 		}
-		if(!item) {
+		if(!con) {
 			return res.status(404).json({message:"not found"})
 		}
 		if(req.session.user == contact.user) {
-			contactModel.replaceOne({"_id":req.params.id},contact,function(err) {
+			contactModel.replaceOne({"_id":id},contact,function(err) {
 				if(err) {
 					console.log("Failed to update contact. Reason:"+err)
 					return res.status(409).json({message:"conflict"})

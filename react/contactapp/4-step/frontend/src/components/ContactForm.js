@@ -1,26 +1,46 @@
 import React from 'react';
 import {Form,Button,Label,Header} from 'semantic-ui-react';
+import {connect} from 'react-redux';
+import {addContact,changeMode,editContact} from '../actions/contactActions';
 
-
-export default class ContactForm extends React.Component {
+class ContactForm extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {
-			firstname:"",
-			lastname:"",
-			nickname:"",
-			title:"",
-			phone:[],
-			addphone:"",
-			mobile:[],
-			addmobile:"",
-			email:[],
-			addemail:"",
-			street:"",
-			city:"",
-			postcode:"",
-			country:""
+		if(props.mode === "Add") {
+			this.state = {
+				firstname:"",
+				lastname:"",
+				nickname:"",
+				title:"",
+				phone:[],
+				addphone:"",
+				mobile:[],
+				addmobile:"",
+				email:[],
+				addemail:"",
+				street:"",
+				city:"",
+				postcode:"",
+				country:""
+			}
+		} else {
+			this.state = {
+				firstname:props.contact.firstname,
+				lastname:props.contact.lastname,
+				nickname:props.contact.nickname,
+				title:props.contact.title,
+				phone:props.contact.phone,
+				addphone:"",
+				mobile:props.contact.mobile,
+				addmobile:"",
+				email:props.contact.email,
+				addemail:"",
+				street:props.contact.street,
+				city:props.contact.city,
+				postcode:props.contact.postcode,
+				country:props.contact.country			
+			}
 		}
 	}
 	
@@ -49,7 +69,13 @@ export default class ContactForm extends React.Component {
 			postcode:this.state.postcode,
 			country:this.state.country
 		}
-		this.props.addContact(contact);
+		if(this.props.mode === "Add") {
+			this.props.dispatch(addContact(this.props.token,contact));
+		} else {
+			contact._id = this.props.contact._id
+			this.props.dispatch(editContact(this.props.token,contact));
+			this.props.dispatch(changeMode("Add",{}));
+		}
 		this.setState({
 			firstname:"",
 			lastname:"",
@@ -246,8 +272,18 @@ export default class ContactForm extends React.Component {
 				</Form.Field>
 				
 			</Form>
-			<Button onClick={this.onSubmit}>Save</Button>
+			<Button onClick={this.onSubmit}>{this.props.mode}</Button>
 		</div>
 		)
 	}
 }
+
+const mapStateToProps = (state) => {
+	return {
+		token:state.login.token,
+		contact:state.contact.contact,
+		mode:state.contact.mode
+	}
+}
+
+export default connect(mapStateToProps)(ContactForm)
