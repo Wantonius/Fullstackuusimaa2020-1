@@ -1,7 +1,7 @@
 import React from 'react';
 import {Table,Button} from 'semantic-ui-react';
 import {connect} from 'react-redux'
-import {removeContact,changeMode} from '../actions/contactActions';
+import {removeContact,changeMode,getContacts} from '../actions/contactActions';
 import Row from './Row'
 import RemoveRow from './RemoveRow';
 import EditRow from './EditRow';
@@ -13,8 +13,22 @@ class ContactList extends React.Component {
 		super(props);
 		this.state = {
 			removeIndex:-1,
-			editIndex:-1
+			editIndex:-1,
+			search:""
 		}
+	}
+	
+	onChange = (event) => {
+		let state = {}
+		state[event.target.name] = event.target.value;
+		this.setState(state)
+	}
+	
+	searchByLastname = (event) => {
+		this.props.dispatch(getContacts(this.props.token,this.state.search));
+		this.setState({
+			search:""
+		})
 	}
 	
 	handleRemove = (id) => {
@@ -77,22 +91,30 @@ class ContactList extends React.Component {
 			}
 		)
 		return(
-			<Table celled>
-				<Table.Header>
-					<Table.HeaderCell>Title</Table.HeaderCell>
-					<Table.HeaderCell>Firstname</Table.HeaderCell>
-					<Table.HeaderCell>Lastname</Table.HeaderCell>
-					<Table.HeaderCell>Main Phone</Table.HeaderCell>
-					<Table.HeaderCell>Main Mobile</Table.HeaderCell>
-					<Table.HeaderCell>Main Email</Table.HeaderCell>
-					<Table.HeaderCell>Remove</Table.HeaderCell>
-					<Table.HeaderCell>Edit</Table.HeaderCell>
-					<Table.HeaderCell>Details</Table.HeaderCell>
-				</Table.Header>
-				<Table.Body>
-				{contactitems}
-				</Table.Body>
-			</Table>
+			<div>
+				<label htmlFor="search">Search by lastname:</label>
+				<input type="text"
+						name="search"
+						onChange={this.onChange}
+						value={this.state.search}/>
+				<Button style={{marginLeft:10}} onClick={this.searchByLastname}>Search</Button>
+				<Table celled>
+					<Table.Header>
+						<Table.HeaderCell>Title</Table.HeaderCell>
+						<Table.HeaderCell>Firstname</Table.HeaderCell>
+						<Table.HeaderCell>Lastname</Table.HeaderCell>
+						<Table.HeaderCell>Main Phone</Table.HeaderCell>
+						<Table.HeaderCell>Main Mobile</Table.HeaderCell>
+						<Table.HeaderCell>Main Email</Table.HeaderCell>
+						<Table.HeaderCell>Remove</Table.HeaderCell>
+						<Table.HeaderCell>Edit</Table.HeaderCell>
+						<Table.HeaderCell>Details</Table.HeaderCell>
+					</Table.Header>
+					<Table.Body>
+					{contactitems}
+					</Table.Body>
+				</Table>
+			</div>
 		)
 		
 	}
