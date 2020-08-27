@@ -1,0 +1,33 @@
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Type</th>
+			<th>Price</th>
+			<th>Count</th>
+			<th>Remove</th>
+			<th>Edit</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr *ngFor="let item of shoppinglist;let idx=index">
+			<ng-container *ngIf="currentIndex != idx;else removerow">
+				<td colspan="1">{{item.type}}</td>
+				<td colspan="1">{{item.price}}</td>
+				<td colspan="1">{{item.count}}</td>
+				<td colspan="1"><button class="btn btn-secondary" 
+									(click)="onRemoveButtonClick(idx)">Buy</button></td>
+				<td colspan="1"><button class="btn btn-primary" 
+									(click)="onEditButtonClick(idx)">Edit</button></td>			
+			</ng-container>
+			<ng-template #removerow>
+				<td colspan="1">{{item.type}}</td>
+				<td colspan="1">{{item.price}}</td>
+				<td colspan="1">{{item.count}}</td>
+				<td colspan="1"><button class="btn btn-warning" 
+									(click)="onCancelButtonClick(idx)">Cancel</button></td>
+				<td colspan="1"><button class="btn btn-success" 
+									(click)="onOkButtonClick(idx)">Ok</button></td>			
+			</ng-template>
+		</tr>
+	</tbody>
+</table>
