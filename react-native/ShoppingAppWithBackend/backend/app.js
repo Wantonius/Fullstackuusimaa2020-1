@@ -12,6 +12,20 @@ let id = 100;
 let registeredUsers = [];
 let loggedSessions = [];
 
+enableCors = (req,res,next) => {
+	res.header('Access-Control-Allow-Origin','*');
+	res.header('Access-Control-Allow-Methods','GET,PUT,POST,DELETE');
+	res.header('Access-Control-Allow-Headers','Content-type, token');
+	
+	return next();
+}
+
+app.use(enableCors);
+
+app.options("*",function(req,res) {
+	return res.status(204).send();
+})
+
 //MIDDLEWARE
 
 createToken = () => {
