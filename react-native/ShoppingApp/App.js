@@ -3,6 +3,10 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import ShoppingForm from './ShoppingForm';
 import ShoppingList from './ShoppingList';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+
+const Stack = createStackNavigator();
 
 export default class App extends React.Component {
 	
@@ -15,26 +19,12 @@ export default class App extends React.Component {
 	}
 	
 	addToList = (item) => {
-		if(item.id === 0) {
-			item.id = this.state.id;
-			let tempList = this.state.list.concat(item);
-			this.setState({
-				id:item.id+1,
-				list:tempList
-			})
-		} else {
-			let tempList = [];
-			for(let i=0;i<this.state.list.length;i++) {
-				if(this.state.list[i].id === item.id) {
-					tempList.push(item)
-				} else {
-					tempList.push(this.state.list[i]);
-				}
-			}
-			this.setState({
-				list:tempList
-			})
-		}
+		item.id = this.state.id;
+		let tempList = this.state.list.concat(item);
+		this.setState({
+			id:item.id+1,
+			list:tempList
+		})	
 	}
 	
 	removeFromList = (id) => {
@@ -48,10 +38,16 @@ export default class App extends React.Component {
 	
   render() {
 	  return (
-		<View style={styles.container}>
-			<ShoppingForm addToList={this.addToList}/>
-			<ShoppingList removeFromList={this.removeFromList} list={this.state.list} addToList={this.addToList}/>
-		</View>
+		<NavigationContainer style={styles.container}>
+			<Stack.Navigator>
+				<Stack.Screen name="Shopping List">
+				{props => <ShoppingList {...props} removeFromList={this.removeFromList} list={this.state.list}/>}
+				</Stack.Screen>
+				<Stack.Screen name="Add Item">
+				{props => <ShoppingForm {...props} addToList={this.addToList}/>}
+				</Stack.Screen>
+			</Stack.Navigator>
+		</NavigationContainer>
 	  );
   }
 }

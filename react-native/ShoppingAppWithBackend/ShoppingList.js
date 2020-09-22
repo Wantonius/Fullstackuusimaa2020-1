@@ -8,7 +8,10 @@ export default class ShoppingList extends React.Component {
 		this.props.removeFromList(id);
 	}
 	
-
+	editItem = (index) => {
+		this.props.editItem(this.props.list[index]);
+		this.props.navigation.navigate("Add Item");
+	}
 
 	render() {
 		let styles = StyleSheet.create({
@@ -60,6 +63,10 @@ export default class ShoppingList extends React.Component {
 										<TouchableHighlight style={styles.removeButtonStyle}
 											onPress={() => this.removeFromList(item.id)}>
 											<Text>Remove</Text>
+										</TouchableHighlight>
+										<TouchableHighlight style={styles.editButtonStyle}
+											onPress={() => this.editItem(index)}>
+											<Text>Edit</Text>
 										</TouchableHighlight>
 									</View>
 								)								
