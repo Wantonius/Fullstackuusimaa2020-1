@@ -15,7 +15,6 @@ export default class App extends React.Component {
 		super(props);
 		this.state = {
 			list:[],
-			id:100,
 			isLogged:false,
 			token:"",
 			item:{},
@@ -23,14 +22,54 @@ export default class App extends React.Component {
 		}
 	}
 	
+	componentDidMount() {
+		if(this.state.isLogged) {
+			this.getList();
+		}
+	}
+	
+	getList = () => {
+		let request = {
+			method:"GET",
+			mode:"cors",
+			headers:{"Content-type":"application/json",
+					  "token":this.state.token}
+		}
+		fetch("http://pm-harkka-backend.herokuapp.com/api/shopping",request).then(response => {
+			if(response.ok) {
+				response.json().then(data => {
+					this.setState({
+						list:data
+					})
+				}).catch(error => {
+					console.log(error)
+				})
+			} else {
+				console.log("Server responded with status:",response.status)
+			}
+		}).catch(error => {
+			console.log(error);
+		})
+	}
+	
 	addToList = (item) => {
 		if(item.id === 0) {
-			item.id = this.state.id;
-			let tempList = this.state.list.concat(item);
-			this.setState({
-				id:item.id+1,
-				list:tempList
-			})	
+			let request = {
+				method:"POST",
+				mode:"cors",
+				headers:{"Content-type":"application/json",
+						  "token":this.state.token},
+				body:JSON.stringify(item)
+			}
+			fetch("http://pm-harkka-backend.herokuapp.com/api/shopping",request).then(response => {
+				if(response.ok) {
+					this.getList();
+				} else {
+					console.log("Server responded with status:",response.status)
+				}
+			}).catch(error => {
+				console.log(error);
+			})
 		} else {
 			let tempList = this.state.list;
 			// FlatList ei näytä renderöivän itseään uudestaan, jos pituus ei muutu. Siksi hack!
@@ -53,10 +92,20 @@ export default class App extends React.Component {
 	}
 	
 	removeFromList = (id) => {
-		let tempId = parseInt(id,10);
-		let tempList = this.state.list.filter(item => item.id !== tempId);
-		this.setState({
-			list:tempList
+		let request = {
+			method:"DELETE",
+			mode:"cors",
+			headers:{"Content-type":"application/json",
+					  "token":this.state.token}
+		}
+		fetch("http://pm-harkka-backend.herokuapp.com/api/shopping/"+id,request).then(response => {
+			if(response.ok) {
+				this.getList();
+			} else {
+				console.log("Server responded with status:",response.status)
+			}
+		}).catch(error => {
+			console.log(error);
 		})
 	}
 	
@@ -68,20 +117,67 @@ export default class App extends React.Component {
 	}
 	
 	register = (user) => {
-		
+		let request = {
+			method:"POST",
+			mode:"cors",
+			headers:{"Content-type":"application/json"},
+			body:JSON.stringify(user)
+		}
+		fetch("http://pm-harkka-backend.herokuapp.com/register",request).then(response => {
+			if(response.ok) {
+				alert("Register success")
+			} else {
+				console.log("Server responded with status:",response.status)
+			}
+		}).catch(error => {
+			console.log(error);
+		})
 	}
 	
 	login = (user) => {
-		this.setState({
-			isLogged:true
+		let request = {
+			method:"POST",
+			mode:"cors",
+			headers:{"Content-type":"application/json"},
+			body:JSON.stringify(user)
+		}
+		fetch("http://pm-harkka-backend.herokuapp.com/login",request).then(response => {
+			if(response.ok) {
+				response.json().then(data => {
+					this.setState({
+						token:data.token,
+						isLogged:true
+					}, () => {
+						this.getList();
+					})
+				}).catch(error => {
+					console.log(error)
+				})
+			} else {
+				console.log("Server responded with status:",response.status)
+			}
+		}).catch(error => {
+			console.log(error);
 		})
 	}
 	
 	logout = () => {
-		this.setState({
-			isLogged:false
+		let request = {
+			method:"POST",
+			mode:"cors",
+			headers:{"Content-type":"application/json",
+					 "token":this.state.token}
+		}
+		fetch("http://pm-harkka-backend.herokuapp.com/logout",request).then(response => {
+			this.setState({
+				token:"",
+				isLogged:false,
+				list:[]
+			})
+		}).catch(error => {
+			console.log(error);
 		})
-	}
+	}	
 	
 	
   render() {
@@ -93,7 +189,8 @@ export default class App extends React.Component {
 						<Stack.Screen name="Shopping List">
 						{props => <ShoppingList {...props} removeFromList={this.removeFromList} 
 								list={this.state.list}
-								editItem={this.editItem}/>}
+								editItem={this.editItem}
+								logout={this.logout}/>}
 						</Stack.Screen>
 						<Stack.Screen name="Add Item">
 						{props => <ShoppingForm {...props} addToList={this.addToList} mode={this.state.mode} item={this.state.item}/>}

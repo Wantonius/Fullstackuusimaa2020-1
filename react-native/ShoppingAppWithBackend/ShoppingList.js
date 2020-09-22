@@ -45,6 +45,7 @@ export default class ShoppingList extends React.Component {
 		})
 		return(
 		<View>
+			<Button style={{marginBottom:30}} onPress={() => this.props.logout()} title="Logout"/>
 			<Button onPress={() => this.props.navigation.navigate('Add Item')} title="Add Item"/>
 				<FlatList data={this.props.list}
 					renderItem={
