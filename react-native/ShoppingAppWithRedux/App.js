@@ -1,12 +1,17 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
 import {Provider} from 'react-redux';
 import thunk from 'redux-thunk';
-import {createStore,applyMiddleware} from 'redux';
+import {createStore,applyMiddleware,combineReducers} from 'redux';
 import loginReducer from './reducers/LoginReducer';
 import Container from './Container';
+import shoppingReducer from './reducers/ShoppingReducer';
 
-const store = createStore(loginReducer,applyMiddleware(thunk))
+let rootReducer = combineReducers({
+	login:loginReducer,
+	shopping:shoppingReducer
+})
+
+const store = createStore(rootReducer,applyMiddleware(thunk))
 
 export default class App extends React.Component {
 

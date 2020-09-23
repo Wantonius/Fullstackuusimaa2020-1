@@ -1,4 +1,7 @@
+import {clearShoppingState,getList} from './ShoppingActions';
+
 export const LOADING = "LOADING";
+export const LOADING_DONE = "LOADING_DONE";
 export const LOGIN_SUCCESS = "LOGIN_SUCCESS";
 export const LOGIN_FAILED = "LOGIN_FAILED";
 export const REGISTER_SUCCESS = "REGISTER_SUCCESS";
@@ -45,6 +48,7 @@ export const login = (user) => {
 			if(response.ok) {
 				response.json().then(data => {
 					dispatch(loginSuccess(data.token));
+					dispatch(getList(data.token));
 				}).catch(error => {
 					dispatch(loginFailed("Failed to parse user info:"+error))
 				})
@@ -67,6 +71,7 @@ export const logout = (token) => {
 					 "token":token}
 		}
 		dispatch(loading())
+		dispatch(clearShoppingState());
 		fetch("http://pm-harkka-backend.herokuapp.com/logout",request).then(response => {
 			if(response.ok) {
 				dispatch(logoutSuccess())
@@ -83,6 +88,12 @@ export const logout = (token) => {
 export const loading = () => {
 	return {
 		type:LOADING
+	}
+}
+
+export const loadingDone = () => {
+	return {
+		type:LOADING_DONE
 	}
 }
 

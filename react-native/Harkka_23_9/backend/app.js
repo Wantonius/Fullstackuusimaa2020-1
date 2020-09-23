@@ -4,13 +4,15 @@ const bodyParser = require("body-parser");
 let app = express();
 
 //DATABASE
-let database = [];
-let id = 100;
+let messageDatabase = []
 
 //USER DATABASES
 
 let registeredUsers = [];
+let usersToMessage = [];
 let loggedSessions = [];
+let id = 100;
+
 
 enableCors = (req,res,next) => {
 	res.header('Access-Control-Allow-Origin','*');
@@ -27,6 +29,16 @@ app.options("*",function(req,res) {
 })
 
 //MIDDLEWARE
+
+createMessageToken = () => {
+	let token = "";
+	const letters = "abcdefghijABCDEFGHIJ0123456789"
+	for(let i=0;i<16;i++) {
+		let temp = Math.floor(Math.random()*30)
+		token = token + letters[temp];
+	}
+	return token;	
+}
 
 createToken = () => {
 	let token = "";
@@ -45,6 +57,7 @@ isUserLogged = (req,res,next) => {
 			if(loggedSessions[i].token === token) {
 				req.session = {};
 				req.session.user = loggedSessions[i].user;
+				req.session.messagetoken = loggedSessions[i].messagetoken;
 				return next();
 			}
 		}
@@ -72,9 +85,15 @@ app.post("/register",function(req,res) {
 			return res.status(409).json({message:"username already in use"})
 		}
 	}
+	let messagetoken = createMessageToken();
 	registeredUsers.push({
 		username:req.body.username,
-		password:req.body.password
+		password:req.body.password,
+		messagetoken:messagetoken
+	})
+	usersToMessage.push({
+		username:req.body.username,
+		messagetoken:messagetoken
 	})
 	return res.status(200).json({message:"success"})
 })
@@ -95,9 +114,10 @@ app.post("/login",function(req,res) {
 				let token = createToken();
 				loggedSessions.push({
 					user:req.body.username,
-					token:token
+					token:token,
+					messagetoken:registeredUsers[i].messagetoken
 				})
-				return res.status(200).json({token:token})
+				return res.status(200).json({token:token,messagetoken:registeredUsers[i].messagetoken})
 			}
 		}
 	}
@@ -119,56 +139,32 @@ app.post("/logout",function(req,res) {
 })
 // REST API
 
-app.get("/api/shopping", function(req,res) {
-	let tempDatabase = database.filter(item => item.user === req.session.user)
+app.get("/api/users",function(req,res) {
+	return res.status(200).json(usersToMessage);
+})
+
+app.get("/api/messages", function(req,res) {
+	let tempDatabase = messageDatabase.filter(item => item.messagetoken === req.session.messagetoken)
 	res.status(200).json(tempDatabase);
 });
 
-app.post("/api/shopping", function(req,res) {
+app.post("/api/messages", function(req,res) {
 	let item = {
-		user:req.session.user,
-		type:req.body.type,
-		count:req.body.count,
-		price:req.body.price,
+		from:req.session.user,
+		messagetoken:req.body.messagetoken,
+		message:req.body.message,
 		id:id
 	}
 	id++;
-	database.push(item);
+	messageDatabase.push(item);
 	res.status(200).json({"message":"success"});
 });
 
-app.delete("/api/shopping/:id", function(req,res) {
-	let tempId = parseInt(req.params.id,10);
-	for(let i=0;i<database.length;i++) {
-		if(tempId === database[i].id) {
-			database.splice(i,1);
-			return res.status(200).json({"message":"success"});
-		}
-	}
-	res.status(404).json({"message":"not found"});
-});
+let port = process.env.PORT || 3000
 
-app.put("/api/shopping/:id", function(req,res) {
-	let tempId = parseInt(req.params.id,10);
-	let item = {
-			user:req.session.user,
-			type:req.body.type,
-			price:req.body.price,
-			count:req.body.count,
-			id:tempId
-	}	
-	for(let i=0;i<database.length;i++) {
-		if(tempId === database[i].id) {
-			database.splice(i,1,item);
-			return res.status(200).json({"message":"success"});
-		}
-	}
-	res.status(404).json({"message":"not found"});
-})
+app.listen(port);
 
-app.listen(process.env.PORT);
-
-console.log("Running in port ", process.env.PORT);
+console.log("Running in port ", port);
 
 
 

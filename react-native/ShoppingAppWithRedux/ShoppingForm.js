@@ -1,7 +1,9 @@
 import React from 'react';
 import {View,Button,Text,TextInput,StyleSheet} from 'react-native';
+import {connect} from 'react-redux';
+import {addToList} from './actions/ShoppingActions';
 
-export default class ShoppingForm extends React.Component {
+class ShoppingForm extends React.Component {
 	
 	constructor(props) {
 		super(props);
@@ -22,8 +24,6 @@ export default class ShoppingForm extends React.Component {
 	
 	addToList = () => {
 		let item = {}
-		console.log(this.state);
-		console.log(this.props);
 		if(this.props.mode === "Add") {
 			item = {
 				id:0,
@@ -40,12 +40,13 @@ export default class ShoppingForm extends React.Component {
 			}
 			this.props.navigation.navigate("Shopping List");
 		}
-		this.props.addToList(item);
+		this.props.dispatch(addToList(item,this.props.token));
 		this.setState({
 			type:"",
 			count:0,
 			price:0
 		})
+		this.props.cancel();
 	}
 	
 	render() {
@@ -93,3 +94,11 @@ export default class ShoppingForm extends React.Component {
 		)	
 	}
 }
+
+const mapStateToProps = (state) => {
+	return {
+		token:state.login.token
+	}
+}
+
+export default connect(mapStateToProps)(ShoppingForm);

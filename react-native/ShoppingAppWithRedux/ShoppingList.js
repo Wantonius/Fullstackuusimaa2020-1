@@ -2,12 +2,13 @@ import React from 'react';
 import {FlatList,View,TouchableHighlight,Button,Text,StyleSheet} from 'react-native';
 import {logout} from './actions/LoginActions';
 import {connect} from 'react-redux';
+import {removeFromList} from './actions/ShoppingActions';
 
 class ShoppingList extends React.Component {
 
 
 	removeFromList = (id) => {
-		this.props.removeFromList(id);
+		this.props.dispatch(removeFromList(id,this.props.token));
 	}
 	
 	editItem = (index) => {
@@ -83,7 +84,8 @@ class ShoppingList extends React.Component {
 
 const mapStateToProps = (state) => {
 	return {
-		token:state.token
+		token:state.login.token,
+		list:state.shopping.list
 	}
 }
 
