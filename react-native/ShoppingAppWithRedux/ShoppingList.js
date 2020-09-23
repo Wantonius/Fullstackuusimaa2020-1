@@ -1,6 +1,7 @@
 import React from 'react';
 import {FlatList,View,TouchableHighlight,Button,Text,StyleSheet} from 'react-native';
-
+import {logout} from './actions/LoginActions';
+import {connect} from 'react-redux';
 
 class ShoppingList extends React.Component {
 
@@ -46,7 +47,7 @@ class ShoppingList extends React.Component {
 		})
 		return(
 		<View>
-			<Button style={{marginBottom:30}} onPress={() => this.props.logout()} title="Logout"/>
+			<Button style={{marginBottom:30}} onPress={() => this.props.dispatch(logout(this.props.token))} title="Logout"/>
 			<Button onPress={() => this.props.navigation.navigate('Add Item')} title="Add Item"/>
 				<FlatList data={this.props.list}
 					renderItem={
@@ -80,4 +81,11 @@ class ShoppingList extends React.Component {
 
 }
 
-export default ShoppingList;
+const mapStateToProps = (state) => {
+	return {
+		token:state.token
+	}
+}
+
+
+export default connect(mapStateToProps)(ShoppingList);

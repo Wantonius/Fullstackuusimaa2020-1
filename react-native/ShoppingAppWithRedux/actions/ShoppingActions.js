@@ -1,0 +1,11 @@
+import {logoutSuccess,loading} from './LoginActions'
+
+export const GET_LIST_SUCCESS = "GET_LIST_SUCCESS"
+export const GET_LIST_FAILED="GET_LIST_FAILED"
+export const ADD_ITEM_SUCCESS = "ADD_ITEM_SUCCESS"
+export const ADD_ITEM_FAILED = "ADD_ITEM_FAILED"
+export const REMOVE_ITEM_SUCCESS = "REMOVE_ITEM_SUCCESS"
+export const REMOVE_ITEM_FAILED = "REMOVE_ITEM_FAILED"
+export const EDIT_ITEM_SUCCESS = "EDIT_ITEM_SUCCESS"
+export const EDIT_ITEM_FAILED = "EDIT_ITEM_FAILED"
+export const CLEAR_SHOPPING_STATE = "CLEAR_SHOPPING_STATE"

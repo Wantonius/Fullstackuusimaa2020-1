@@ -1,7 +1,8 @@
 import React from 'react';
 import {View,TouchableHighlight,Text,TextInput,StyleSheet} from 'react-native';
-
-
+import {connect} from 'react-redux';
+import {login} from './actions/LoginActions';
+import {register} from './actions/LoginActions';
 
 class LoginPage extends React.Component {
 	
@@ -18,7 +19,7 @@ class LoginPage extends React.Component {
 			username:this.state.username,
 			password:this.state.password
 		}
-		this.props.register(user);
+		this.props.dispatch(register(user));
 	}
 	
 	login = () => {
@@ -26,7 +27,7 @@ class LoginPage extends React.Component {
 			username:this.state.username,
 			password:this.state.password
 		}
-		this.props.login(user);
+		this.props.dispatch(login(user));
 	}
 
 	render() {
@@ -63,4 +64,4 @@ class LoginPage extends React.Component {
 	}
 }
 
-export default LoginPage;
+export default connect()(LoginPage);
