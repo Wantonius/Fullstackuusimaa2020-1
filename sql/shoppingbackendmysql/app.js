@@ -6,7 +6,7 @@ let app = express();
 
 app.use(bodyParser.json());
 
-const time_to_life_diff = 10000;
+const time_to_life_diff = 36000000;
 
 //middleware
 
@@ -26,6 +26,39 @@ let con = mysql.createConnection({
 	password:"test",
 	database:"shopping"
 })
+
+isUserLogged = (req,res,next) => {
+	let token = req.headers.token;
+	if(!token) {
+		return res.status(403).json({message:"forbidden"})
+	}
+	let sql = "SELECT * from sessions WHERE token='"+token+"'";
+	con.query(sql, function(err,result) {
+		if(err) {
+			return res.status(500).json({message:"database failure"});
+			throw err;
+		}
+		if(result.length === 0) {
+			return res.status(403).json({message:"forbidden"})
+		}
+		let now = new Date().getTime();
+		let session = result[0];
+		if(now > session.ttl) {
+			sql = "DELETE FROM sessions WHERE token='"+token+"'";
+			con.query(sql, function(err) {
+				return res.status(403).json({message:"forbidden"})
+			})
+		} else {
+			req.session = {};
+			req.session.user = session.user;
+			let ttl = now+time_to_life_diff;
+			sql = "UPDATE sessions SET ttl="+ttl+" WHERE token='"+token+"'";
+			con.query(sql,function(err) {
+				return next();
+			})
+		}
+	})
+}
 
 con.connect(function(err){
 	if(err) throw err;
@@ -48,7 +81,7 @@ con.connect(function(err){
 
 //LOGIN API
 
-app.post("/register",function(req,res) {
+app.post("/a/register",function(req,res) {
 	if(!req.body.username || !req.body.password) {
 		return res.status(422).json({"message":"please provide proper information"})
 	}
@@ -73,7 +106,7 @@ app.post("/register",function(req,res) {
 	})
 })
 
-app.post("/login",function(req,res) {
+app.post("/a/login",function(req,res) {
 	if(!req.body.username || !req.body.password) {
 		return res.status(422).json({"message":"please provide proper information"})
 	}
@@ -96,8 +129,8 @@ app.post("/login",function(req,res) {
 		}
 		if(result[0].password === user.password) {
 			let token = createToken();
-			let time_to_live = Date.now() + time_to_life_diff;
-			sql = "INSERT INTO sessions (user,token,ttl) values ('"+result.username+"','"+token+"',"+time_to_live+")"
+			let time_to_live = new Date().getTime() + time_to_life_diff;
+			sql = "INSERT INTO sessions (user,token,ttl) values ('"+result[0].username+"','"+token+"',"+time_to_live+")"
 			con.query(sql, function(err) {
 				if(err){
 					return res.status(500).json({message:"database failure"});
@@ -112,9 +145,11 @@ app.post("/login",function(req,res) {
 	})
 })
 
+app.use("/a/api",isUserLogged);
+
 // SHOPPING API
-app.get("/api/shopping",function(req,res) {
-	let sql = "SELECT type,price,count FROM shoppingitems WHERE user='"+req.session.user+"'";
+app.get("/a/api/shopping",function(req,res) {
+	let sql = "SELECT id,type,price,count FROM shoppingitems WHERE user='"+req.session.user+"'";
 	con.query(sql, function(err,result, fields) {
 		if(err) {
 			res.status(500).json({message:"database returned an error"});
@@ -124,7 +159,7 @@ app.get("/api/shopping",function(req,res) {
 	})
 })
 
-app.post("/api/shopping",function(req,res) {
+app.post("/a/api/shopping",function(req,res) {
 	let item = {
 		type:req.body.type,
 		price:req.body.price,
@@ -141,9 +176,9 @@ app.post("/api/shopping",function(req,res) {
 	})
 })
 
-app.delete("/api/shopping/:id",function(req,res) {
+app.delete("/a/api/shopping/:id",function(req,res) {
 	let tempId = parseInt(req.params.id,10);
-	let sql = "DELETE FROM shoppingitems WHERE id="+tempId+",user='"+req.session.user+"'";
+	let sql = "DELETE FROM shoppingitems WHERE id="+tempId+" AND user='"+req.session.user+"'";
 	con.query(sql,function(err,result) {
 		if(err) {
 			res.status(500).json({message:"database returned an error"});
@@ -156,14 +191,14 @@ app.delete("/api/shopping/:id",function(req,res) {
 	})
 })
 
-app.put("/api/shopping/:id",function(req,res) {
+app.put("/a/api/shopping/:id",function(req,res) {
 	let tempId = parseInt(req.params.id,10);
 	let item = {
 		type:req.body.type,
 		price:req.body.price,
 		count:req.body.count
 	}
-	let sql = "UPDATE shoppingitems SET type='"+item.type+"',price="+item.price+",count="+item.count+" WHERE id="+tempId+",user='"+req.session.user+"'";;
+	let sql = "UPDATE shoppingitems SET type='"+item.type+"',price="+item.price+",count="+item.count+" WHERE id="+tempId+" AND user='"+req.session.user+"'";
 	con.query(sql,function(err,result) {
 		if(err) {
 			res.status(500).json({message:"database returned an error"});
@@ -176,7 +211,7 @@ app.put("/api/shopping/:id",function(req,res) {
 	})
 })
 
-let port = 3001 || process.env.PORT;
+let port = 3000 || process.env.PORT;
 
 app.listen(port);
 
